@@ -196,7 +196,11 @@ class QQTransportClient:
 
             try:
                 async with ClientSession(headers=self._build_headers(server_config), timeout=timeout) as session:
-                    async with session.ws_connect(ws_url, heartbeat=server_config.heartbeat_interval or None) as ws:
+                    async with session.ws_connect(
+                        ws_url,
+                        heartbeat=server_config.heartbeat_interval or None,
+                        max_msg_size=100 * 1024 * 1024,  # 保留本地大消息兼容；aiohttp 默认接收上限为 4 MiB。
+                    ) as ws:
                         self._ws = ws
                         self._logger.info(f"适配器已连接: {display_url}")
                         disconnect_reason = await self._receive_loop(ws)
